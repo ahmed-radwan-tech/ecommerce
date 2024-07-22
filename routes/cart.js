@@ -1,64 +1,19 @@
 const router = require('express').Router()
-const Cart = require('../models/product')
-const { verifyToken, verifyTokenAndAdmin, verifyTokenAndAuthorization } = require('./verifyToken')
+const { verifyToken, verifyTokenAndAuthorization, verifyTokenAndAdmin } = require('./verifyToken')
+const cartController = require('../controllers/cartController');
 
 
-router.post("/", verifyToken, async (req, res) => {
 
-    const newCart = new Cart(req.body);
-    try {
-        const savedCart = await newCart.save();
-        res.status(200).json(savedCart);
-    } catch (err) {
-        res.status(500).json(err);
-    }
-});
+router.post("/", verifyToken, cartController.cartCreat);
 
 
-router.put('/:id', verifyTokenAndAuthorization, async (req, res) => {
-    try {
-        const updatedCart = await Cart.findByIdAndUpdate(
-            req.params.id,
-            {
-                $set: req.body,
-            },
-            { new: true }
-        );
-        res.status(200).json(updatedCart);
-    } catch (err) {
-        res.status(500).json(err);
-    }
-});
+router.put('/:id', verifyTokenAndAuthorization, cartController.cartUpdate);
 
-router.delete('/:id', verifyTokenAndAuthorization, async (req, res) => {
-    try {
-        await Cart.findByIdAndDelete(req.params.id);
-        res.status(200).json("Cart has been deleted...");
-    }
-    catch (err) {
-        res.status(500).json(err);
-    }
-});
+router.delete('/:id', verifyTokenAndAuthorization, cartController.cartDelete);
 
-router.get('/find/:userId', async (req, res) => {
-    try {
-        const Cart = await Product.find({ userId: req.params.userId });
-        res.status(200).json(Cart);
-    }
-    catch (err) {
-        res.status(500).json(err);
-    }
-});
+router.get('/find/:userId', verifyTokenAndAuthorization, cartController.getUserCart);
 
-router.get('/', async (req, res) => {
-    try {
-        const Cart = await Cart.find();
-        res.status(200).json(Cart);
-    }
-    catch (err) {
-        res.status(500).json(err);
-    }
-});
+router.get('/', verifyTokenAndAdmin, cartController.getAllCart);
 
 
 
