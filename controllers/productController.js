@@ -1,10 +1,9 @@
-const Product = require('../models/product')
+const productService = require('../services/productService');
 
 const newProduct = async (req, res) => {
 
-    const newProduct = new Product(req.body);
     try {
-        const savedProduct = await newProduct.save();
+        const savedProduct = await productService.newProduct(req.body);
         res.status(200).json(savedProduct);
     } catch (err) {
         res.status(500).json(err);
@@ -14,13 +13,7 @@ const newProduct = async (req, res) => {
 
 const updatedProduct = async (req, res) => {
     try {
-        const updatedProduct = await Product.findByIdAndUpdate(
-            req.params.id,
-            {
-                $set: req.body,
-            },
-            { new: true }
-        );
+        const updatedProduct = await productService.updatedProduct(req.params.id, req.body);
         res.status(200).json(updatedProduct);
     } catch (err) {
         res.status(500).json(err);
@@ -29,7 +22,7 @@ const updatedProduct = async (req, res) => {
 
 const deleteProduct = async (req, res) => {
     try {
-        await Product.findByIdAndDelete(req.params.id);
+        const messeage = await productService.deleteProduct(req.params.id);
         res.status(200).json("Product has been deleted...");
     }
     catch (err) {
@@ -39,7 +32,7 @@ const deleteProduct = async (req, res) => {
 
 const getProduct = async (req, res) => {
     try {
-        const product = await Product.findById(req.params.id);
+        const product = await productService.getProduct(req.params.id);
         res.status(200).json(product);
     }
     catch (err) {
@@ -51,18 +44,7 @@ const getAllProduct = async (req, res) => {
     const queryNew = req.query.new;
     const queryCategory = req.query.category;
     try {
-        let products;
-        if (queryNew) {
-            products = await Product.find().sort({ createdAt: -1 }).limit(5);
-        } else if (queryCategory) {
-            products = await Product.find({
-                categories: {
-                    $in: [queryCategory],
-                },
-            });
-        } else {
-            products = await Product.find();
-        }
+        const products = await productService.getAllProduct(queryNew, queryCategory);
         res.status(200).json(products);
     }
     catch (err) {

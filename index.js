@@ -18,7 +18,7 @@ app.use(express.json());
 app.use("/auth", authRoute);
 app.use("/users", userRoute);
 app.use("/products", productRoute);
-app.use("/carts", cartRoute);
+app.use("/cart", cartRoute);
 app.use("/orders", orderRoute);
 
 app.listen(process.env.PORT || port, () => {

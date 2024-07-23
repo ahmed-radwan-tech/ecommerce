@@ -1,16 +1,12 @@
-const User = require('../models/User');
-const CryptoJS = require('crypto-js');
+const bcrypt = require("bcrypt");
+const userServices = require("../services/userService");
 
 const updateUser = async (req, res) => {
     if (req.body.password) {
         req.body.password = bcrypt.hash(req.body.password, process.env.HASH_SALT_ROUNDS);
     }
     try {
-        const updatedUser = await User.findByIdAndUpdate(
-            req.params.id,
-            { $set: req.body },
-            { new: true }
-        );
+        const updatedUser = await userServices.updated(req.params.id, req.body);
         res.status(200).json(updatedUser);
     } catch (err) {
         res.status(500).json(err);
@@ -19,8 +15,8 @@ const updateUser = async (req, res) => {
 
 const deleteUser = async (req, res) => {
     try {
-        await User.findByIdAndDelete(req.params.id);
-        res.status(200).json("User has been deleted...");
+        const meesage = await userServices.deleted(req.params.id);
+        res.status(200).json(meesage);
     } catch (err) {
         res.status(500).json(err);
     }
@@ -28,7 +24,7 @@ const deleteUser = async (req, res) => {
 
 const findUser = async (req, res) => {
     try {
-        const user = await User.findById(req.params.id);
+        const user = await userServices.finded(req.params.id);
         const { password, ...others } = user._doc;
         res.status(200).json(others);
     } catch (err) {
@@ -39,9 +35,7 @@ const findUser = async (req, res) => {
 const getAllUsers = async (req, res) => {
     const query = req.query.new;
     try {
-        const users = query
-            ? await User.find().sort({ _id: -1 }).limit(5)
-            : await User.find();
+        const users = await userServices.getAll(query);
         res.status(200).json(users);
     } catch (err) {
         res.status(500).json(err);
@@ -49,23 +43,9 @@ const getAllUsers = async (req, res) => {
 };
 
 const getUserStats = async (req, res) => {
-    const date = new Date();
-    const lastYear = new Date(date.setFullYear(date.getFullYear() - 1));
+
     try {
-        const data = await User.aggregate([
-            { $match: { createdAt: { $gte: lastYear } } },
-            {
-                $project: {
-                    month: { $month: "$createdAt" },
-                },
-            },
-            {
-                $group: {
-                    _id: "$month",
-                    total: { $sum: 1 },
-                },
-            },
-        ]);
+        const data = await userServices.status();
         res.status(200).json(data);
     } catch (err) {
         res.status(500).json(err);

@@ -1,16 +1,11 @@
-const User = require('../models/User')
 const bcrypt = require('bcrypt')
-jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken')
+const authServices = require('../services/authService')
 
 // Register
 const register = async (req, res) => {
-    const newUser = new User({
-        username: req.body.username,
-        email: req.body.email,
-        password: req.body.password,
-    })
     try {
-        const user = await newUser.save()
+        const user = await authServices.register(req.body.username, req.body.email, req.body.password)
         res.status(200).json(user)
     }
     catch (err) {
@@ -21,7 +16,7 @@ const register = async (req, res) => {
 // Login
 const login = async (req, res) => {
     try {
-        const user = await User.findOne({ username: req.body.username })
+        const user = await authServices.login(req.body.username)
         !user && res.status(401).json("Wrong username or password!")
         const validPassword = await bcrypt.compare(req.body.password, user.password)
         !validPassword && res.status(401).json("Wrong username or password!")

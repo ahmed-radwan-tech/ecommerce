@@ -9,7 +9,8 @@ const UserSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 UserSchema.pre('save', async function (next) {
-    this.password = await bcrypt.hash(this.password, process.env.HASH_SALT_ROUNDS);
+    const saltRounds = parseInt(process.env.HASH_SALT_ROUNDS, 10);
+    this.password = await bcrypt.hash(this.password, saltRounds);
     next();
 });
 
